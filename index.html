@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dreamland 上传</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --canvas: #f6f6f6;
+        --paper: #fff;
+        --ink: #171719;
+        --muted: #8f9093;
+        --line: #dddddf;
+        --placeholder: #f3f3f3;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 24px;
+        background: var(--canvas);
+        color: var(--ink);
+        font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+      }
+
+      .stage {
+        width: min(82vw, 900px);
+        aspect-ratio: 3 / 4;
+        overflow: hidden;
+        padding: clamp(34px, 6.8%, 72px) clamp(28px, 6.8%, 72px);
+        border-radius: 30px;
+        background: var(--paper);
+        box-shadow: 0 20px 38px rgba(0, 0, 0, .12);
+      }
+
+      .upload {
+        width: min(54%, 340px);
+        aspect-ratio: 1;
+        margin: 0 auto clamp(34px, 6.7%, 70px);
+        display: grid;
+        place-items: center;
+        border: 2px dashed #d5d5d6;
+        border-radius: 28px;
+        background: #fafafa;
+        color: #a8a8aa;
+        cursor: pointer;
+        overflow: hidden;
+        transition: border-color .2s ease, background .2s ease;
+      }
+
+      .upload:hover,
+      .upload:focus-visible {
+        border-color: #9b9b9d;
+        background: #f7f7f7;
+      }
+
+      .upload.has-image {
+        border-color: transparent;
+        background: transparent;
+        border-radius: 50%;
+      }
+
+      .upload:focus-visible { outline: 3px solid rgba(23, 23, 25, .18); outline-offset: 4px; }
+
+      .upload-copy { display: grid; justify-items: center; gap: 13px; }
+      .plus { font-size: clamp(48px, 6vw, 66px); font-weight: 300; line-height: .7; }
+      .upload-label { font-size: clamp(19px, 2.3vw, 27px); letter-spacing: .03em; }
+
+      .preview {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: cover;
+      }
+
+      .hidden { display: none; }
+
+      .feed { display: grid; gap: 0; }
+
+      .feed-row {
+        min-width: 0;
+        display: grid;
+        grid-template-columns: clamp(118px, 19%, 176px) 1fr auto;
+        align-items: center;
+        column-gap: clamp(24px, 3.5vw, 42px);
+      }
+
+      .feed-row + .feed-row {
+        margin-top: 34px;
+        padding-top: 34px;
+        border-top: 1px solid var(--line);
+      }
+
+      .avatar {
+        width: 100%;
+        aspect-ratio: 1;
+        overflow: hidden;
+        border-radius: 27px;
+        background: var(--placeholder);
+      }
+
+      .copy { min-width: 0; }
+      .title { margin: 0; font-size: clamp(29px, 4vw, 46px); font-weight: 700; letter-spacing: -.05em; line-height: 1.04; }
+      .subtitle { margin: 22px 0 0; color: var(--muted); font-size: clamp(20px, 2.6vw, 31px); line-height: 1.1; }
+      .time { align-self: start; margin-top: 0; color: var(--muted); font-size: clamp(20px, 2.4vw, 28px); white-space: nowrap; }
+
+      .thumbs {
+        grid-column: 2 / -1;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: clamp(18px, 2.5vw, 30px);
+        margin-top: 31px;
+      }
+
+      .thumb {
+        width: 100%;
+        aspect-ratio: 1;
+        overflow: hidden;
+        background: var(--placeholder);
+      }
+
+      @media (max-width: 680px) {
+        body { padding: 12px; }
+        .stage { width: min(96vw, 560px); max-height: none; padding: 28px 23px; border-radius: 24px; }
+        .upload { width: 58%; margin-bottom: 28px; border-radius: 22px; }
+        .feed-row { grid-template-columns: 76px 1fr auto; column-gap: 16px; }
+        .avatar { border-radius: 18px; }
+        .feed-row + .feed-row { margin-top: 24px; padding-top: 24px; }
+        .subtitle { margin-top: 10px; }
+        .thumbs { gap: 10px; margin-top: 18px; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .upload { transition: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="stage" aria-label="图片上传预览">
+      <label class="upload" for="image-input" tabindex="0">
+        <input id="image-input" class="hidden" type="file" accept="image/*" />
+        <span class="upload-copy" data-upload-copy>
+          <span class="plus" aria-hidden="true">＋</span>
+          <span class="upload-label">点击上传</span>
+        </span>
+        <img class="preview hidden" data-preview alt="已上传的图片" />
+      </label>
+
+      <section class="feed" aria-label="图片展示区">
+        <article class="feed-row">
+          <div class="avatar"><img class="preview hidden" data-preview alt="展示图片一" /></div>
+          <div class="copy">
+            <h1 class="title">Dreamland</h1>
+            <p class="subtitle">To fulfill your dream</p>
+          </div>
+          <time class="time" datetime="13:14">13:14</time>
+        </article>
+
+        <article class="feed-row">
+          <div class="avatar"><img class="preview hidden" data-preview alt="展示图片二" /></div>
+          <div class="copy"><h2 class="title">Dreamland</h2></div>
+          <div class="thumbs" aria-label="图片缩略图">
+            <div class="thumb"></div>
+            <div class="thumb"></div>
+            <div class="thumb"></div>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <script>
+      const input = document.querySelector('#image-input');
+      const upload = document.querySelector('.upload');
+      const previews = document.querySelectorAll('[data-preview]');
+      const copy = document.querySelector('[data-upload-copy]');
+
+      function showImage(file) {
+        if (!file || !file.type.startsWith('image/')) return;
+        const url = URL.createObjectURL(file);
+        previews.forEach((image) => {
+          image.src = url;
+          image.classList.remove('hidden');
+        });
+        copy.classList.add('hidden');
+        upload.classList.add('has-image');
+      }
+
+      input.addEventListener('change', () => showImage(input.files[0]));
+      upload.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          input.click();
+        }
+      });
+    </script>
+  </body>
+</html>

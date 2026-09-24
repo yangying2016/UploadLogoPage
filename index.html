@@ -2,283 +2,231 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Dreamland 上传</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dreamland</title>
     <style>
       :root {
-        color-scheme: light;
-        --canvas: #f6f6f6;
-        --paper: #fff;
-        --ink: #171719;
-        --muted: #8f9093;
-        --line: #dddddf;
-        --placeholder: #f3f3f3;
+        --orange: #ff7200;
+        --charcoal: #4d4f51;
+        --ink: #1d1d1d;
       }
 
-      * { box-sizing: border-box; }
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 100%;
+        min-width: 1142px;
+        height: 100%;
+        min-height: 706px;
+        margin: 0;
+        background: #ffffff;
+        overflow: hidden;
+      }
 
       body {
-        margin: 0;
-        min-height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-        padding: 24px;
-        background: var(--canvas);
+        font-family: Arial, Helvetica, sans-serif;
         color: var(--ink);
-        font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
       }
 
-      .app-shell { width: min(82vw, 900px); display: grid; gap: 14px; }
-
-      .topbar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 4px;
+      .canvas {
+        position: relative;
+        width: 1142px;
+        height: 706px;
+        margin: 0 auto;
+        background: #fff;
       }
 
-      .brand {
-        color: var(--ink);
-        font-size: 18px;
-        font-weight: 700;
-        letter-spacing: -.04em;
-      }
-
-      .export-button {
-        border: 0;
-        border-radius: 999px;
-        padding: 11px 18px;
-        background: var(--ink);
-        color: #fff;
-        font: inherit;
-        font-size: 14px;
-        cursor: pointer;
-        transition: opacity .2s ease, transform .2s ease;
-      }
-
-      .export-button:hover { opacity: .82; transform: translateY(-1px); }
-      .export-button:focus-visible { outline: 3px solid rgba(23, 23, 25, .22); outline-offset: 3px; }
-      .export-button:disabled { cursor: wait; opacity: .55; transform: none; }
-
-      .stage {
-        width: 100%;
-        aspect-ratio: 3 / 6;
+      .cover {
+        position: absolute;
+        top: 84px;
+        left: 82px;
+        width: 408px;
+        height: 545px;
         overflow: hidden;
-        padding: clamp(34px, 6.8%, 72px) clamp(28px, 6.8%, 72px);
-        border-radius: 30px;
-        background: var(--paper);
-        box-shadow: 0 20px 38px rgba(0, 0, 0, .12);
+        background: var(--orange);
       }
 
-      .upload {
-        width: min(54%, 340px);
-        aspect-ratio: 1;
-        margin: 0 auto clamp(34px, 6.7%, 70px);
-        display: grid;
-        place-items: center;
-        border: 2px dashed #d5d5d6;
-        border-radius: 28px;
-        background: #fafafa;
-        color: #a8a8aa;
-        cursor: pointer;
-        overflow: hidden;
-        transition: border-color .2s ease, background .2s ease;
+      .cover__lower {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        height: 143px;
+        background: var(--charcoal);
       }
 
-      .upload:hover,
-      .upload:focus-visible {
-        border-color: #9b9b9d;
-        background: #f7f7f7;
-      }
-
-      .upload.has-image {
-        border-color: transparent;
-        background: transparent;
+      .cover__circle {
+        position: absolute;
+        top: 294px;
+        left: 225px;
+        width: 148px;
+        height: 148px;
+        border: 2px solid #202426;
         border-radius: 50%;
+        background: var(--orange);
       }
 
-      .upload:focus-visible { outline: 3px solid rgba(23, 23, 25, .18); outline-offset: 4px; }
+      .cover__copy {
+        position: absolute;
+        top: 444px;
+        left: 0;
+        width: 316px;
+        text-align: center;
+      }
 
-      .upload-copy { display: grid; justify-items: center; gap: 13px; }
-      .plus { font-size: clamp(48px, 6vw, 66px); font-weight: 300; line-height: .7; }
-      .upload-label { font-size: clamp(19px, 2.3vw, 27px); letter-spacing: .03em; }
+      .cover__title {
+        margin: 0;
+        color: #f2f2f2;
+        font-size: 30px;
+        font-weight: 400;
+        line-height: 36px;
+        letter-spacing: -0.35px;
+      }
+
+      .cover__subtitle {
+        margin: 3px 0 0;
+        color: #8e8f90;
+        font-size: 14px;
+        line-height: 18px;
+      }
 
       .preview {
-        width: 100%;
-        height: 100%;
-        display: block;
-        object-fit: cover;
+        position: absolute;
+        top: 84px;
+        left: 620px;
+        width: 410px;
+        height: 547px;
+        background: #fcfcfc;
       }
 
-      .hidden { display: none; }
-
-      .feed { display: grid; gap: 0; }
-
-      .feed-row {
-        min-width: 0;
-        display: grid;
-        grid-template-columns: clamp(118px, 19%, 176px) 1fr auto;
-        align-items: center;
-        column-gap: clamp(24px, 3.5vw, 42px);
+      .preview__circle {
+        position: absolute;
+        top: 49px;
+        left: 127px;
+        width: 160px;
+        height: 160px;
+        border: 1.5px solid #bdbdbd;
+        border-radius: 50%;
+        background: #fdfdfd;
       }
 
-      .feed-row + .feed-row {
-        margin-top: 34px;
-        padding-top: 34px;
-        border-top: 1px solid var(--line);
+      .preview__row {
+        position: absolute;
+        left: 32px;
+        width: 346px;
+        height: 68px;
       }
 
-      .avatar {
-        width: 100%;
-        aspect-ratio: 1;
-        overflow: hidden;
-        border-radius: 27px;
-        background: var(--placeholder);
+      .preview__row--first {
+        top: 259px;
       }
 
-      .copy { min-width: 0; }
-      .title { margin: 0; font-size: clamp(29px, 4vw, 46px); font-weight: 700; letter-spacing: -.05em; line-height: 1.04; }
-      .subtitle { margin: 22px 0 0; color: var(--muted); font-size: clamp(20px, 2.6vw, 31px); line-height: 1.1; }
-      .time { align-self: start; margin-top: 0; color: var(--muted); font-size: clamp(20px, 2.4vw, 28px); white-space: nowrap; }
-
-      .thumbs {
-        grid-column: 2 / -1;
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: clamp(18px, 2.5vw, 30px);
-        margin-top: 31px;
+      .preview__row--second {
+        top: 380px;
       }
 
-      .thumb {
-        width: 100%;
-        aspect-ratio: 1;
-        overflow: hidden;
-        background: var(--placeholder);
+      .preview__thumb {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 68px;
+        height: 67px;
+        border: 1.5px solid #c5c5c5;
+        border-radius: 9px;
+        background: #fdfdfd;
       }
 
-      @media (max-width: 680px) {
-        body { padding: 12px; }
-        .app-shell { width: min(96vw, 560px); }
-        .stage { padding: 28px 23px; border-radius: 24px; }
-        .upload { width: 58%; margin-bottom: 28px; border-radius: 22px; }
-        .feed-row { grid-template-columns: 76px 1fr auto; column-gap: 16px; }
-        .avatar { border-radius: 18px; }
-        .feed-row + .feed-row { margin-top: 24px; padding-top: 24px; }
-        .subtitle { margin-top: 10px; }
-        .thumbs { gap: 10px; margin-top: 18px; }
+      .preview__name {
+        position: absolute;
+        top: 2px;
+        left: 82px;
+        margin: 0;
+        color: #171717;
+        font-size: 16px;
+        font-weight: 600;
+        line-height: 20px;
       }
 
-      @media (prefers-reduced-motion: reduce) {
-        .upload { transition: none; }
+      .preview__meta {
+        position: absolute;
+        top: 3px;
+        right: 12px;
+        margin: 0;
+        color: #858585;
+        font-size: 12px;
+        line-height: 18px;
+      }
+
+      .preview__description {
+        position: absolute;
+        top: 36px;
+        left: 82px;
+        margin: 0;
+        color: #999999;
+        font-size: 13px;
+        line-height: 18px;
+      }
+
+      .preview__divider {
+        position: absolute;
+        top: 355px;
+        left: 101px;
+        width: 309px;
+        height: 1px;
+        background: #dedede;
+      }
+
+      .preview__blocks {
+        position: absolute;
+        top: 34px;
+        left: 83px;
+        display: flex;
+        gap: 7px;
+      }
+
+      .preview__block {
+        width: 76px;
+        height: 75px;
+        background: #f1f1f1;
       }
     </style>
   </head>
   <body>
-    <div class="app-shell">
-      <nav class="topbar" aria-label="页面导航">
-        <span class="brand">Dreamland</span>
-        <button id="export-button" class="export-button" type="button">导出图片</button>
-      </nav>
-
-      <main id="export-target" class="stage" aria-label="图片上传预览">
-      <label class="upload" for="image-input" tabindex="0">
-        <input id="image-input" class="hidden" type="file" accept="image/*" />
-        <span class="upload-copy" data-upload-copy>
-          <span class="plus" aria-hidden="true">＋</span>
-          <span class="upload-label">点击上传</span>
-        </span>
-        <img class="preview hidden" data-preview alt="已上传的图片" />
-      </label>
-
-      <section class="feed" aria-label="图片展示区">
-        <article class="feed-row">
-          <div class="avatar"><img class="preview hidden" data-preview alt="展示图片一" /></div>
-          <div class="copy">
-            <h1 class="title">Dreamland</h1>
-            <p class="subtitle">To fulfill your dream</p>
-          </div>
-          <time class="time" datetime="13:14">13:14</time>
-        </article>
-
-        <article class="feed-row">
-          <div class="avatar"><img class="preview hidden" data-preview alt="展示图片二" /></div>
-          <div class="copy"><h2 class="title">Dreamland</h2></div>
-          <div class="thumbs" aria-label="图片缩略图">
-            <div class="thumb"></div>
-            <div class="thumb"></div>
-            <div class="thumb"></div>
-          </div>
-        </article>
-
-        <article class="feed-row">
-          <div class="avatar"><img class="preview hidden" data-preview alt="新增展示图片" /></div>
-          <div class="copy">
-            <h2 class="title">Dreamland</h2>
-            <p class="subtitle">To fulfill your dream</p>
-          </div>
-          <time class="time" datetime="13:14">13:14</time>
-        </article>
+    <main class="canvas" aria-label="Dreamland cover and preview">
+      <section class="cover" aria-label="Dreamland cover">
+        <div class="cover__lower"></div>
+        <div class="cover__circle" aria-hidden="true"></div>
+        <div class="cover__copy">
+          <p class="cover__title">Dream*land</p>
+          <p class="cover__subtitle">Fulfill your dream</p>
+        </div>
       </section>
-      </main>
-    </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script>
-      const input = document.querySelector('#image-input');
-      const upload = document.querySelector('.upload');
-      const previews = document.querySelectorAll('[data-preview]');
-      const copy = document.querySelector('[data-upload-copy]');
-      const stage = document.querySelector('#export-target');
-      const exportButton = document.querySelector('#export-button');
-      let imageUrl;
+      <section class="preview" aria-label="Dreamland preview list">
+        <div class="preview__circle" aria-hidden="true"></div>
 
-      function showImage(file) {
-        if (!file || !file.type.startsWith('image/')) return;
-        if (imageUrl) URL.revokeObjectURL(imageUrl);
-        imageUrl = URL.createObjectURL(file);
-        previews.forEach((image) => {
-          image.src = imageUrl;
-          image.classList.remove('hidden');
-        });
-        copy.classList.add('hidden');
-        upload.classList.add('has-image');
-      }
+        <div class="preview__row preview__row--first">
+          <div class="preview__thumb" aria-hidden="true"></div>
+          <p class="preview__name">Dreamland</p>
+          <p class="preview__meta">13:14</p>
+          <p class="preview__description">To fulfill your dream</p>
+        </div>
 
-      function exportStage() {
-        exportButton.disabled = true;
-        exportButton.textContent = '导出中…';
-        Promise.resolve()
-          .then(() => {
-            if (typeof html2canvas !== 'function') throw new Error('export library unavailable');
-            return html2canvas(stage, { backgroundColor: '#fff', scale: 2, useCORS: true });
-          })
-          .then((canvas) => new Promise((resolve, reject) => {
-            canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error('empty image')), 'image/png');
-          }))
-          .then((blob) => {
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.download = 'dreamland.png';
-            link.href = url;
-            link.click();
-            URL.revokeObjectURL(url);
-          })
-          .catch(() => alert('图片导出失败，请重试。'))
-          .finally(() => {
-            exportButton.disabled = false;
-            exportButton.textContent = '导出图片';
-          });
-      }
+        <div class="preview__divider" aria-hidden="true"></div>
 
-      input.addEventListener('change', () => showImage(input.files[0]));
-      exportButton.addEventListener('click', exportStage);
-      upload.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          input.click();
-        }
-      });
-    </script>
+        <div class="preview__row preview__row--second">
+          <div class="preview__thumb" aria-hidden="true"></div>
+          <p class="preview__name">Dreamland</p>
+          <div class="preview__blocks" aria-hidden="true">
+            <span class="preview__block"></span>
+            <span class="preview__block"></span>
+            <span class="preview__block"></span>
+          </div>
+        </div>
+      </section>
+    </main>
   </body>
 </html>

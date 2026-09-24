@@ -36,6 +36,9 @@
         top: 18px;
         left: 82px;
         z-index: 10;
+        display: flex;
+        align-items: center;
+        gap: 8px;
       }
 
       .upload-input {
@@ -65,6 +68,32 @@
 
       .upload-button:hover {
         background: #343638;
+      }
+
+      .export-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 112px;
+        height: 34px;
+        padding: 0 14px;
+        border: 0;
+        border-radius: 2px;
+        background: #ff7200;
+        color: #fff;
+        cursor: pointer;
+        font: inherit;
+        font-size: 13px;
+        line-height: 1;
+      }
+
+      .export-button:hover {
+        background: #e56300;
+      }
+
+      .export-button:disabled {
+        cursor: wait;
+        opacity: 0.7;
       }
 
       .upload-input:focus-visible + .upload-button {
@@ -164,7 +193,7 @@
         left: 127px;
         width: 160px;
         height: 160px;
-        border: 1.5px solid #bdbdbd;
+        border: 0;
         border-radius: 50%;
         background: #fdfdfd;
         object-fit: cover;
@@ -191,7 +220,7 @@
         left: 0;
         width: 68px;
         height: 67px;
-        border: 1.5px solid #c5c5c5;
+        border: 0;
         border-radius: 9px;
         background: #fdfdfd;
         object-fit: cover;
@@ -258,6 +287,7 @@
       <div class="upload-control">
         <input class="upload-input" id="image-upload" type="file" accept="image/*" />
         <label class="upload-button" for="image-upload">上传图片</label>
+        <button class="export-button" id="export-button" type="button">导出两张图片</button>
       </div>
 
       <section class="cover" aria-label="Dreamland cover">
@@ -286,9 +316,9 @@
           <img class="preview__thumb" data-preview alt="" />
           <p class="preview__name">Dreamland</p>
           <div class="preview__blocks">
-            <span class="preview__block" data-preview alt=""></span>
-            <span class="preview__block" data-preview alt=""></span>
-            <span class="preview__block" data-preview alt=""></span>
+            <span class="preview__block" data-preview></span>
+            <span class="preview__block" data-preview></span>
+            <span class="preview__block" data-preview></span>
           </div>
         </div>
       </section>
@@ -297,7 +327,13 @@
     <script>
       const imageUpload = document.querySelector("#image-upload");
       const uploadButton = document.querySelector(".upload-button");
+      const exportButton = document.querySelector("#export-button");
       const previews = document.querySelectorAll("[data-preview]");
+      const coverImage = document.querySelector(".cover__image");
+      const coverCircle = document.querySelector(".cover__circle");
+      const previewCircle = document.querySelector(".preview__circle");
+      const previewThumbs = document.querySelectorAll(".preview__thumb");
+      const previewBlocks = document.querySelectorAll(".preview__block");
       let imageUrl = "";
 
       imageUpload.addEventListener("change", () => {
@@ -310,6 +346,174 @@
           preview.src = imageUrl;
         });
         uploadButton.textContent = "重新上传";
+      });
+
+      function roundedRectPath(context, x, y, width, height, radius) {
+        const r = Math.min(radius, width / 2, height / 2);
+        context.beginPath();
+        context.moveTo(x + r, y);
+        context.arcTo(x + width, y, x + width, y + height, r);
+        context.arcTo(x + width, y + height, x, y + height, r);
+        context.arcTo(x, y + height, x, y, r);
+        context.arcTo(x, y, x + width, y, r);
+        context.closePath();
+      }
+
+      function drawImageCover(context, image, x, y, width, height) {
+        if (!image || !image.complete || !image.naturalWidth) return;
+
+        const scale = Math.max(width / image.naturalWidth, height / image.naturalHeight);
+        const drawWidth = image.naturalWidth * scale;
+        const drawHeight = image.naturalHeight * scale;
+        context.drawImage(
+          image,
+          x + (width - drawWidth) / 2,
+          y + (height - drawHeight) / 2,
+          drawWidth,
+          drawHeight,
+        );
+      }
+
+      function drawImageSlot(context, image, x, y, width, height, background, radius = 0) {
+        context.save();
+        context.fillStyle = background;
+
+        if (radius === "circle") {
+          context.beginPath();
+          context.arc(x + width / 2, y + height / 2, Math.min(width, height) / 2, 0, Math.PI * 2);
+          context.clip();
+          context.fill();
+        } else if (radius > 0) {
+          roundedRectPath(context, x, y, width, height, radius);
+          context.clip();
+          context.fill();
+        } else {
+          context.fillRect(x, y, width, height);
+        }
+
+        drawImageCover(context, image, x, y, width, height);
+        context.restore();
+      }
+
+      function drawLeftExport() {
+        const canvas = document.createElement("canvas");
+        canvas.width = 408;
+        canvas.height = 545;
+        const context = canvas.getContext("2d");
+
+        context.fillStyle = "#ff7200";
+        context.fillRect(0, 0, 408, 545);
+        drawImageSlot(context, coverImage, 0, 0, 408, 402, "#ff7200");
+
+        context.fillStyle = "#4d4f51";
+        context.fillRect(0, 402, 408, 143);
+
+        drawImageSlot(context, coverCircle, 225, 294, 148, 148, "#ff7200", "circle");
+        context.strokeStyle = "#202426";
+        context.lineWidth = 2;
+        context.beginPath();
+        context.arc(299, 368, 74, 0, Math.PI * 2);
+        context.stroke();
+
+        context.textAlign = "center";
+        context.fillStyle = "#f2f2f2";
+        context.font = "400 30px Arial";
+        context.fillText("Dream*land", 158, 474);
+        context.fillStyle = "#8e8f90";
+        context.font = "14px Arial";
+        context.fillText("Fulfill your dream", 158, 497);
+        return canvas;
+      }
+
+      function drawRightExport() {
+        const canvas = document.createElement("canvas");
+        canvas.width = 410;
+        canvas.height = 547;
+        const context = canvas.getContext("2d");
+
+        context.fillStyle = "#fcfcfc";
+        context.fillRect(0, 0, 410, 547);
+        drawImageSlot(context, previewCircle, 127, 49, 160, 160, "#fdfdfd", "circle");
+        drawImageSlot(context, previewThumbs[0], 32, 259, 68, 67, "#fdfdfd", 9);
+        drawImageSlot(context, previewThumbs[1], 32, 380, 68, 67, "#fdfdfd", 9);
+
+        context.fillStyle = "#171717";
+        context.font = "600 16px Arial";
+        context.textAlign = "left";
+        context.fillText("Dreamland", 114, 277);
+        context.fillText("Dreamland", 114, 398);
+
+        context.fillStyle = "#858585";
+        context.font = "12px Arial";
+        context.textAlign = "right";
+        context.fillText("13:14", 366, 276);
+
+        context.fillStyle = "#999999";
+        context.font = "13px Arial";
+        context.textAlign = "left";
+        context.fillText("To fulfill your dream", 114, 309);
+
+        context.fillStyle = "#dedede";
+        context.fillRect(101, 355, 309, 1);
+
+        previewBlocks.forEach((block, index) => {
+          drawImageSlot(context, block, 115 + index * 83, 414, 76, 75, "#f1f1f1");
+        });
+        return canvas;
+      }
+
+      function downloadCanvas(canvas, filename) {
+        return new Promise((resolve, reject) => {
+          canvas.toBlob((blob) => {
+            if (!blob) {
+              reject(new Error("无法生成图片"));
+              return;
+            }
+
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 0);
+            resolve();
+          }, "image/png");
+        });
+      }
+
+      async function waitForPreviewImages() {
+        await Promise.all(
+          [...previews].map((image) => {
+            if (!image.currentSrc || image.complete) return Promise.resolve();
+            return new Promise((resolve) => {
+              image.addEventListener("load", resolve, { once: true });
+              image.addEventListener("error", resolve, { once: true });
+            });
+          }),
+        );
+      }
+
+      exportButton.addEventListener("click", async () => {
+        exportButton.disabled = true;
+        exportButton.textContent = "导出中…";
+
+        try {
+          await waitForPreviewImages();
+          await downloadCanvas(drawLeftExport(), "dreamland-left.png");
+          await new Promise((resolve) => setTimeout(resolve, 80));
+          await downloadCanvas(drawRightExport(), "dreamland-right.png");
+          exportButton.textContent = "导出完成";
+        } catch (error) {
+          console.error(error);
+          exportButton.textContent = "导出失败";
+        } finally {
+          setTimeout(() => {
+            exportButton.disabled = false;
+            exportButton.textContent = "导出两张图片";
+          }, 1000);
+        }
       });
     </script>
   </body>

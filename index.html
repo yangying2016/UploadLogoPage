@@ -316,9 +316,9 @@
           <img class="preview__thumb" data-preview alt="" />
           <p class="preview__name">Dreamland</p>
           <div class="preview__blocks">
-            <span class="preview__block" data-preview></span>
-            <span class="preview__block" data-preview></span>
-            <span class="preview__block" data-preview></span>
+            <img class="preview__block" data-preview alt="" />
+            <img class="preview__block" data-preview alt="" />
+            <img class="preview__block" data-preview alt="" />
           </div>
         </div>
       </section>
@@ -334,6 +334,7 @@
       const previewCircle = document.querySelector(".preview__circle");
       const previewThumbs = document.querySelectorAll(".preview__thumb");
       const previewBlocks = document.querySelectorAll(".preview__block");
+      const EXPORT_LONG_EDGE = 7680;
       let imageUrl = "";
 
       imageUpload.addEventListener("change", () => {
@@ -395,11 +396,20 @@
         context.restore();
       }
 
-      function drawLeftExport() {
+      function createExportCanvas(width, height) {
+        const scale = EXPORT_LONG_EDGE / Math.max(width, height);
         const canvas = document.createElement("canvas");
-        canvas.width = 408;
-        canvas.height = 545;
+        canvas.width = Math.round(width * scale);
+        canvas.height = Math.round(height * scale);
         const context = canvas.getContext("2d");
+        context.scale(scale, scale);
+        context.imageSmoothingEnabled = true;
+        context.imageSmoothingQuality = "high";
+        return [canvas, context];
+      }
+
+      function drawLeftExport() {
+        const [canvas, context] = createExportCanvas(408, 545);
 
         context.fillStyle = "#ff7200";
         context.fillRect(0, 0, 408, 545);
@@ -426,10 +436,7 @@
       }
 
       function drawRightExport() {
-        const canvas = document.createElement("canvas");
-        canvas.width = 410;
-        canvas.height = 547;
-        const context = canvas.getContext("2d");
+        const [canvas, context] = createExportCanvas(410, 547);
 
         context.fillStyle = "#fcfcfc";
         context.fillRect(0, 0, 410, 547);

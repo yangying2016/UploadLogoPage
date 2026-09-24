@@ -31,6 +31,47 @@
         color: var(--ink);
       }
 
+      .upload-control {
+        position: absolute;
+        top: 18px;
+        left: 82px;
+        z-index: 10;
+      }
+
+      .upload-input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+      }
+
+      .upload-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 96px;
+        height: 34px;
+        padding: 0 14px;
+        border: 0;
+        border-radius: 2px;
+        background: var(--ink);
+        color: #fff;
+        cursor: pointer;
+        font-size: 13px;
+        line-height: 1;
+      }
+
+      .upload-button:hover {
+        background: #343638;
+      }
+
+      .upload-input:focus-visible + .upload-button {
+        outline: 2px solid #ff7200;
+        outline-offset: 3px;
+      }
+
       .canvas {
         position: relative;
         width: 1142px;
@@ -49,11 +90,23 @@
         background: var(--orange);
       }
 
+      .cover__image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 0;
+        width: 100%;
+        height: 402px;
+        object-fit: cover;
+        background: var(--orange);
+      }
+
       .cover__lower {
         position: absolute;
         right: 0;
         bottom: 0;
         left: 0;
+        z-index: 1;
         height: 143px;
         background: var(--charcoal);
       }
@@ -62,17 +115,20 @@
         position: absolute;
         top: 294px;
         left: 225px;
+        z-index: 2;
         width: 148px;
         height: 148px;
         border: 2px solid #202426;
         border-radius: 50%;
         background: var(--orange);
+        object-fit: cover;
       }
 
       .cover__copy {
         position: absolute;
         top: 444px;
         left: 0;
+        z-index: 3;
         width: 316px;
         text-align: center;
       }
@@ -111,6 +167,7 @@
         border: 1.5px solid #bdbdbd;
         border-radius: 50%;
         background: #fdfdfd;
+        object-fit: cover;
       }
 
       .preview__row {
@@ -137,6 +194,7 @@
         border: 1.5px solid #c5c5c5;
         border-radius: 9px;
         background: #fdfdfd;
+        object-fit: cover;
       }
 
       .preview__name {
@@ -191,14 +249,21 @@
         width: 76px;
         height: 75px;
         background: #f1f1f1;
+        object-fit: cover;
       }
     </style>
   </head>
   <body>
     <main class="canvas" aria-label="Dreamland cover and preview">
+      <div class="upload-control">
+        <input class="upload-input" id="image-upload" type="file" accept="image/*" />
+        <label class="upload-button" for="image-upload">上传图片</label>
+      </div>
+
       <section class="cover" aria-label="Dreamland cover">
+        <img class="cover__image" data-preview alt="" />
         <div class="cover__lower"></div>
-        <div class="cover__circle" aria-hidden="true"></div>
+        <img class="cover__circle" data-preview alt="" />
         <div class="cover__copy">
           <p class="cover__title">Dream*land</p>
           <p class="cover__subtitle">Fulfill your dream</p>
@@ -206,10 +271,10 @@
       </section>
 
       <section class="preview" aria-label="Dreamland preview list">
-        <div class="preview__circle" aria-hidden="true"></div>
+        <img class="preview__circle" data-preview alt="" />
 
         <div class="preview__row preview__row--first">
-          <div class="preview__thumb" aria-hidden="true"></div>
+          <img class="preview__thumb" data-preview alt="" />
           <p class="preview__name">Dreamland</p>
           <p class="preview__meta">13:14</p>
           <p class="preview__description">To fulfill your dream</p>
@@ -218,15 +283,34 @@
         <div class="preview__divider" aria-hidden="true"></div>
 
         <div class="preview__row preview__row--second">
-          <div class="preview__thumb" aria-hidden="true"></div>
+          <img class="preview__thumb" data-preview alt="" />
           <p class="preview__name">Dreamland</p>
-          <div class="preview__blocks" aria-hidden="true">
-            <span class="preview__block"></span>
-            <span class="preview__block"></span>
-            <span class="preview__block"></span>
+          <div class="preview__blocks">
+            <span class="preview__block" data-preview alt=""></span>
+            <span class="preview__block" data-preview alt=""></span>
+            <span class="preview__block" data-preview alt=""></span>
           </div>
         </div>
       </section>
     </main>
+
+    <script>
+      const imageUpload = document.querySelector("#image-upload");
+      const uploadButton = document.querySelector(".upload-button");
+      const previews = document.querySelectorAll("[data-preview]");
+      let imageUrl = "";
+
+      imageUpload.addEventListener("change", () => {
+        const [file] = imageUpload.files;
+        if (!file || !file.type.startsWith("image/")) return;
+
+        if (imageUrl) URL.revokeObjectURL(imageUrl);
+        imageUrl = URL.createObjectURL(file);
+        previews.forEach((preview) => {
+          preview.src = imageUrl;
+        });
+        uploadButton.textContent = "重新上传";
+      });
+    </script>
   </body>
 </html>

@@ -288,6 +288,8 @@
         <input class="upload-input" id="image-upload" type="file" accept="image/*" />
         <label class="upload-button" for="image-upload">上传图片</label>
         <button class="export-button" id="export-button" type="button">导出两张图片</button>
+        <button class="export-button" id="export-left-button" type="button">导出左边图片</button>
+        <button class="export-button" id="export-right-button" type="button">导出右边图片</button>
       </div>
 
       <section class="cover" aria-label="Dreamland cover">
@@ -328,6 +330,8 @@
       const imageUpload = document.querySelector("#image-upload");
       const uploadButton = document.querySelector(".upload-button");
       const exportButton = document.querySelector("#export-button");
+      const exportLeftButton = document.querySelector("#export-left-button");
+      const exportRightButton = document.querySelector("#export-right-button");
       const previews = document.querySelectorAll("[data-preview]");
       const coverImage = document.querySelector(".cover__image");
       const coverCircle = document.querySelector(".cover__circle");
@@ -502,25 +506,42 @@
         );
       }
 
-      exportButton.addEventListener("click", async () => {
-        exportButton.disabled = true;
-        exportButton.textContent = "导出中…";
-
+      async function runExport(button, label, exportAction) {
+        button.disabled = true;
+        button.textContent = "导出中…";
         try {
           await waitForPreviewImages();
+          await exportAction();
+          button.textContent = "导出完成";
+        } catch (error) {
+          console.error(error);
+          button.textContent = "导出失败";
+        } finally {
+          setTimeout(() => {
+            button.disabled = false;
+            button.textContent = label;
+          }, 1000);
+        }
+      }
+
+      exportButton.addEventListener("click", () => {
+        runExport(exportButton, "导出两张图片", async () => {
           await downloadCanvas(drawLeftExport(), "dreamland-left.png");
           await new Promise((resolve) => setTimeout(resolve, 80));
           await downloadCanvas(drawRightExport(), "dreamland-right.png");
-          exportButton.textContent = "导出完成";
-        } catch (error) {
-          console.error(error);
-          exportButton.textContent = "导出失败";
-        } finally {
-          setTimeout(() => {
-            exportButton.disabled = false;
-            exportButton.textContent = "导出两张图片";
-          }, 1000);
-        }
+        });
+      });
+
+      exportLeftButton.addEventListener("click", () => {
+        runExport(exportLeftButton, "导出左边图片", () => {
+          return downloadCanvas(drawLeftExport(), "dreamland-left.png");
+        });
+      });
+
+      exportRightButton.addEventListener("click", () => {
+        runExport(exportRightButton, "导出右边图片", () => {
+          return downloadCanvas(drawRightExport(), "dreamland-right.png");
+        });
       });
     </script>
   </body>

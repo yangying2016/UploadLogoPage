@@ -19,11 +19,11 @@
       body {
         width: 100%;
         min-width: 1142px;
-        height: 100%;
         min-height: 706px;
         margin: 0;
         background: #ffffff;
-        overflow: hidden;
+        overflow-x: auto;
+        overflow-y: auto;
       }
 
       body {
@@ -104,9 +104,20 @@
       .canvas {
         position: relative;
         width: 1142px;
-        height: 706px;
+        min-height: 706px;
         margin: 0 auto;
         background: #fff;
+      }
+
+      .rows {
+        width: 1142px;
+      }
+
+      .layout-row {
+        position: relative;
+        width: 1142px;
+        height: 706px;
+        flex: 0 0 706px;
       }
 
       .cover {
@@ -285,72 +296,100 @@
   <body>
     <main class="canvas" aria-label="Luna PFP cover and preview">
       <div class="upload-control">
-        <input class="upload-input" id="image-upload" type="file" accept="image/*" />
+        <input class="upload-input" id="image-upload" type="file" accept="image/*" multiple />
         <label class="upload-button" for="image-upload">上传图片</label>
         <button class="export-button" id="export-button" type="button">导出两张图片</button>
         <button class="export-button" id="export-left-button" type="button">导出左边图片</button>
         <button class="export-button" id="export-right-button" type="button">导出右边图片</button>
       </div>
 
-      <section class="cover" aria-label="Luna PFP cover">
-        <img class="cover__image" data-preview alt="" />
-        <div class="cover__lower"></div>
-        <img class="cover__circle" data-preview alt="" />
-        <div class="cover__copy">
-          <p class="cover__title">Luna PFP</p>
-          <p class="cover__subtitle">rate my pfp:</p>
+      <div class="rows" id="rows">
+        <div class="layout-row" data-row-index="0">
+          <section class="cover" aria-label="Luna PFP cover">
+            <img class="cover__image" data-preview alt="" />
+            <div class="cover__lower"></div>
+            <img class="cover__circle" data-preview alt="" />
+            <div class="cover__copy">
+              <p class="cover__title">Luna PFP</p>
+              <p class="cover__subtitle">rate my pfp:</p>
+            </div>
+          </section>
+
+          <section class="preview" aria-label="Luna PFP preview list">
+            <img class="preview__circle" data-preview alt="" />
+
+            <div class="preview__row preview__row--first">
+              <img class="preview__thumb" data-preview alt="" />
+              <p class="preview__name">Luna PFP</p>
+              <p class="preview__meta">14:37</p>
+              <p class="preview__description">To rate my pfp:</p>
+            </div>
+
+            <div class="preview__divider" aria-hidden="true"></div>
+
+            <div class="preview__row preview__row--second">
+              <img class="preview__thumb" data-preview alt="" />
+              <p class="preview__name">Luna PFP</p>
+              <div class="preview__blocks">
+                <img class="preview__block" data-preview alt="" />
+                <img class="preview__block" data-preview alt="" />
+                <img class="preview__block" data-preview alt="" />
+              </div>
+            </div>
+          </section>
         </div>
-      </section>
-
-      <section class="preview" aria-label="Luna PFP preview list">
-        <img class="preview__circle" data-preview alt="" />
-
-        <div class="preview__row preview__row--first">
-          <img class="preview__thumb" data-preview alt="" />
-          <p class="preview__name">Luna PFP</p>
-          <p class="preview__meta">14:37</p>
-          <p class="preview__description">To rate my pfp:</p>
-        </div>
-
-        <div class="preview__divider" aria-hidden="true"></div>
-
-        <div class="preview__row preview__row--second">
-          <img class="preview__thumb" data-preview alt="" />
-          <p class="preview__name">Luna PFP</p>
-          <div class="preview__blocks">
-            <span class="preview__block" data-preview></span>
-            <span class="preview__block" data-preview></span>
-            <span class="preview__block" data-preview></span>
-          </div>
-        </div>
-      </section>
+      </div>
     </main>
 
     <script>
       const imageUpload = document.querySelector("#image-upload");
       const uploadButton = document.querySelector(".upload-button");
+      const rowsContainer = document.querySelector("#rows");
       const exportButton = document.querySelector("#export-button");
       const exportLeftButton = document.querySelector("#export-left-button");
       const exportRightButton = document.querySelector("#export-right-button");
-      const previews = document.querySelectorAll("[data-preview]");
-      const coverImage = document.querySelector(".cover__image");
-      const coverCircle = document.querySelector(".cover__circle");
-      const previewCircle = document.querySelector(".preview__circle");
-      const previewThumbs = document.querySelectorAll(".preview__thumb");
-      const previewBlocks = document.querySelectorAll(".preview__block");
       const EXPORT_LONG_EDGE = 7680;
-      let imageUrl = "";
+      const initialRow = rowsContainer.querySelector(".layout-row");
+      let imageUrls = [];
 
-      imageUpload.addEventListener("change", () => {
-        const [file] = imageUpload.files;
-        if (!file || !file.type.startsWith("image/")) return;
+      function getRows() {
+        return [...rowsContainer.querySelectorAll(".layout-row")];
+      }
 
-        if (imageUrl) URL.revokeObjectURL(imageUrl);
-        imageUrl = URL.createObjectURL(file);
-        previews.forEach((preview) => {
+      function setRowImage(row, imageUrl) {
+        row.querySelectorAll("[data-preview]").forEach((preview) => {
           preview.src = imageUrl;
         });
-        uploadButton.textContent = "重新上传";
+      }
+
+      function resetRows() {
+        imageUrls.forEach((imageUrl) => URL.revokeObjectURL(imageUrl));
+        imageUrls = [];
+        rowsContainer.replaceChildren();
+      }
+
+      function createRows(files) {
+        resetRows();
+        files.forEach((file, index) => {
+          const row = initialRow.cloneNode(true);
+          row.dataset.rowIndex = String(index);
+          const imageUrl = URL.createObjectURL(file);
+          imageUrls.push(imageUrl);
+          setRowImage(row, imageUrl);
+          rowsContainer.appendChild(row);
+        });
+      }
+
+      imageUpload.addEventListener("click", () => {
+        imageUpload.value = "";
+      });
+
+      imageUpload.addEventListener("change", () => {
+        const files = [...imageUpload.files].filter((file) => file.type.startsWith("image/"));
+        if (!files.length) return;
+
+        createRows(files);
+        uploadButton.textContent = files.length > 1 ? `已上传 ${files.length} 张` : "重新上传";
       });
 
       function roundedRectPath(context, x, y, width, height, radius) {
@@ -393,6 +432,9 @@
           context.clip();
           context.fill();
         } else {
+          context.beginPath();
+          context.rect(x, y, width, height);
+          context.clip();
           context.fillRect(x, y, width, height);
         }
 
@@ -412,7 +454,9 @@
         return [canvas, context];
       }
 
-      function drawLeftExport() {
+      function drawLeftExport(row) {
+        const coverImage = row.querySelector(".cover__image");
+        const coverCircle = row.querySelector(".cover__circle");
         const [canvas, context] = createExportCanvas(408, 545);
 
         context.fillStyle = "#ff7200";
@@ -439,7 +483,10 @@
         return canvas;
       }
 
-      function drawRightExport() {
+      function drawRightExport(row) {
+        const previewCircle = row.querySelector(".preview__circle");
+        const previewThumbs = row.querySelectorAll(".preview__thumb");
+        const previewBlocks = row.querySelectorAll(".preview__block");
         const [canvas, context] = createExportCanvas(410, 547);
 
         context.fillStyle = "#fcfcfc";
@@ -494,9 +541,9 @@
         });
       }
 
-      async function waitForPreviewImages() {
+      async function waitForPreviewImages(row) {
         await Promise.all(
-          [...previews].map((image) => {
+          [...row.querySelectorAll("[data-preview]")].map((image) => {
             if (!image.currentSrc || image.complete) return Promise.resolve();
             return new Promise((resolve) => {
               image.addEventListener("load", resolve, { once: true });
@@ -510,7 +557,6 @@
         button.disabled = true;
         button.textContent = "导出中…";
         try {
-          await waitForPreviewImages();
           await exportAction();
           button.textContent = "导出完成";
         } catch (error) {
@@ -524,24 +570,32 @@
         }
       }
 
+      async function exportRows(rows, side) {
+        for (let index = 0; index < rows.length; index += 1) {
+          const row = rows[index];
+          await waitForPreviewImages(row);
+          const suffix = rows.length === 1 ? "" : `-${index + 1}`;
+          if (side === "left" || side === "both") {
+            await downloadCanvas(drawLeftExport(row), `dreamland-left${suffix}.png`);
+          }
+          if (side === "both") await new Promise((resolve) => setTimeout(resolve, 80));
+          if (side === "right" || side === "both") {
+            await downloadCanvas(drawRightExport(row), `dreamland-right${suffix}.png`);
+          }
+          if (index < rows.length - 1) await new Promise((resolve) => setTimeout(resolve, 80));
+        }
+      }
+
       exportButton.addEventListener("click", () => {
-        runExport(exportButton, "导出两张图片", async () => {
-          await downloadCanvas(drawLeftExport(), "dreamland-left.png");
-          await new Promise((resolve) => setTimeout(resolve, 80));
-          await downloadCanvas(drawRightExport(), "dreamland-right.png");
-        });
+        runExport(exportButton, "导出两张图片", () => exportRows(getRows(), "both"));
       });
 
       exportLeftButton.addEventListener("click", () => {
-        runExport(exportLeftButton, "导出左边图片", () => {
-          return downloadCanvas(drawLeftExport(), "dreamland-left.png");
-        });
+        runExport(exportLeftButton, "导出左边图片", () => exportRows(getRows(), "left"));
       });
 
       exportRightButton.addEventListener("click", () => {
-        runExport(exportRightButton, "导出右边图片", () => {
-          return downloadCanvas(drawRightExport(), "dreamland-right.png");
-        });
+        runExport(exportRightButton, "导出右边图片", () => exportRows(getRows(), "right"));
       });
     </script>
   </body>

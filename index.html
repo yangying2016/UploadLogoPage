@@ -125,7 +125,7 @@
         top: 84px;
         left: 82px;
         width: 408px;
-        height: 545px;
+        height: 510px;
         overflow: hidden;
         background: var(--orange);
       }
@@ -194,7 +194,7 @@
         top: 84px;
         left: 620px;
         width: 410px;
-        height: 547px;
+        height: 512.5px;
         background: #fcfcfc;
       }
 
@@ -348,7 +348,8 @@
       const exportButton = document.querySelector("#export-button");
       const exportLeftButton = document.querySelector("#export-left-button");
       const exportRightButton = document.querySelector("#export-right-button");
-      const EXPORT_LONG_EDGE = 7680;
+      const EXPORT_WIDTH = 1080;
+      const EXPORT_HEIGHT = 1350;
       const initialRow = rowsContainer.querySelector(".layout-row");
       let imageUrls = [];
 
@@ -443,10 +444,10 @@
       }
 
       function createExportCanvas(width, height) {
-        const scale = EXPORT_LONG_EDGE / Math.max(width, height);
+        const scale = EXPORT_WIDTH / width;
         const canvas = document.createElement("canvas");
-        canvas.width = Math.round(width * scale);
-        canvas.height = Math.round(height * scale);
+        canvas.width = EXPORT_WIDTH;
+        canvas.height = EXPORT_HEIGHT;
         const context = canvas.getContext("2d");
         context.scale(scale, scale);
         context.imageSmoothingEnabled = true;
@@ -457,14 +458,14 @@
       function drawLeftExport(row) {
         const coverImage = row.querySelector(".cover__image");
         const coverCircle = row.querySelector(".cover__circle");
-        const [canvas, context] = createExportCanvas(408, 545);
+        const [canvas, context] = createExportCanvas(408, 510);
 
         context.fillStyle = "#ff7200";
-        context.fillRect(0, 0, 408, 545);
+        context.fillRect(0, 0, 408, 510);
         drawImageSlot(context, coverImage, 0, 0, 408, 402, "#ff7200");
 
         context.fillStyle = "#4d4f51";
-        context.fillRect(0, 402, 408, 143);
+        context.fillRect(0, 367, 408, 143);
 
         drawImageSlot(context, coverCircle, 225, 294, 148, 148, "#ff7200", "circle");
         context.strokeStyle = "#202426";
@@ -487,10 +488,10 @@
         const previewCircle = row.querySelector(".preview__circle");
         const previewThumbs = row.querySelectorAll(".preview__thumb");
         const previewBlocks = row.querySelectorAll(".preview__block");
-        const [canvas, context] = createExportCanvas(410, 547);
+        const [canvas, context] = createExportCanvas(410, 512.5);
 
         context.fillStyle = "#fcfcfc";
-        context.fillRect(0, 0, 410, 547);
+        context.fillRect(0, 0, 410, 512.5);
         drawImageSlot(context, previewCircle, 127, 49, 160, 160, "#fdfdfd", "circle");
         drawImageSlot(context, previewThumbs[0], 32, 259, 68, 67, "#fdfdfd", 9);
         drawImageSlot(context, previewThumbs[1], 32, 380, 68, 67, "#fdfdfd", 9);
@@ -537,7 +538,7 @@
             link.remove();
             setTimeout(() => URL.revokeObjectURL(url), 0);
             resolve();
-          }, "image/png");
+          }, "image/jpeg", 0.92);
         });
       }
 
@@ -576,11 +577,11 @@
           await waitForPreviewImages(row);
           const suffix = rows.length === 1 ? "" : `-${index + 1}`;
           if (side === "left" || side === "both") {
-            await downloadCanvas(drawLeftExport(row), `dreamland-left${suffix}.png`);
+            await downloadCanvas(drawLeftExport(row), `dreamland-left${suffix}.jpg`);
           }
           if (side === "both") await new Promise((resolve) => setTimeout(resolve, 80));
           if (side === "right" || side === "both") {
-            await downloadCanvas(drawRightExport(row), `dreamland-right${suffix}.png`);
+            await downloadCanvas(drawRightExport(row), `dreamland-right${suffix}.jpg`);
           }
           if (index < rows.length - 1) await new Promise((resolve) => setTimeout(resolve, 80));
         }
